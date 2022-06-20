@@ -10,7 +10,7 @@ npm run dev
 You can log in with this dummy user:
 
 ```
-email === user
+username === user
 password === test
 ```
 
