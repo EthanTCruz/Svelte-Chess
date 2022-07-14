@@ -20,5 +20,5 @@
 	// import { session } from '$app/stores';
 	// $session.user;
 </script>
-
+<a href="/gameplay">Home</a>
 <h1 class="text-2xl font-semibold text-center">Hi! You are registered with usernam {user.username}.</h1>
