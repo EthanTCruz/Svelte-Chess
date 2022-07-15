@@ -14,6 +14,7 @@ CREATE TABLE `past_games` (
 `move_no` int NOT NULL,
 `move` varchar(16) NOT NULL,
 `game_status` varchar(16) NOT NULL,
+`pieces_and_positions` varchar(255) NOT NULL,
 KEY `black_player_id_idx` (`black_player_id`),
 KEY `white_player_id_idx` (`white_player_id`),
 CONSTRAINT `black_player_id` FOREIGN KEY (`black_player_id`) REFERENCES `user` (`user_id`),
