@@ -33,6 +33,7 @@ class Past_Game(GameBase):
         orm_mode = True
 
 class UserBase(BaseModel):
+    user_id: int
     username: str
 
 

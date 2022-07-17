@@ -9,7 +9,7 @@ class User(Base):
 
     user_id = Column(String, primary_key=True, index=True)
     username = Column(String, unique=True, index=True)
-    hashed_password = Column(String)
+    password = Column(String)
 
     #current_games = relationship("Current_games", back_populates="owner")
     #past_games = relationship("Past_games", back_populates="owner")
