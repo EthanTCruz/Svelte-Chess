@@ -6,3 +6,4 @@ node_modules
 /build
 /.svelte-kit
 /package
+/sql_api/env

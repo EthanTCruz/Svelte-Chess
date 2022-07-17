@@ -3,25 +3,37 @@ from typing import List, Union
 from pydantic import BaseModel
 
 
-class ItemBase(BaseModel):
-    title: str
-    description: Union[str, None] = None
+class GameBase(BaseModel):
+    move_no: int
+    move: str
+    game_status: str
+    pieces_and_positions: str
 
 
-class ItemCreate(ItemBase):
+class GameCreate(GameBase):
     pass
 
 
-class Item(ItemBase):
-    id: int
-    owner_id: int
+class Current_Game(GameBase):
+    game_id: int
+    white_player_id: int
+    black_player_id: int
+    turn: str
 
     class Config:
         orm_mode = True
 
+class Past_Game(GameBase):
+    game_id: int
+    white_player_id: int
+    black_player_id: int
+    game_status: str
+
+    class Config:
+        orm_mode = True
 
 class UserBase(BaseModel):
-    email: str
+    username: str
 
 
 class UserCreate(UserBase):
@@ -29,9 +41,11 @@ class UserCreate(UserBase):
 
 
 class User(UserBase):
-    id: int
-    is_active: bool
-    items: List[Item] = []
+    user_id: int
+    username: str
+    password: str
+    #past_games: List[Past_Game] = []
+    #current_games: List[Current_Game] = []
 
     class Config:
         orm_mode = True
