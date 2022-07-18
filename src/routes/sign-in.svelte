@@ -4,17 +4,17 @@
 	import { session } from '$app/stores';
 
 	let error;
-
+	let result = null;
 	async function handleSubmit({ detail: { username, password } }) {
-		const response = await fetch('/api/sign-in', {
+		const response = await fetch(`http://localhost:8000/sign-in?`, {
 			method: 'POST',
-			body: JSON.stringify({ username, password }),
+			body: JSON.stringify({ 'username': username, 'password': password }),
 			headers: {
-				'Content-Type': 'application/json',
+				'accept': 'application/json',
 			},
 		});
-
 		const body = await response.json();
+		result = JSON.stringify(body)
 		if (response.ok) {
 			// session from getSession hook will otherwise not be set before navigation
 			// that would trigger redirect from /protected back to /sign-in
@@ -24,6 +24,10 @@
 		error = body.message;
 	}
 </script>
+
+<pre>
+{result}
+</pre>
 
 <h1 class="text-2xl font-semibold text-center">Sign In</h1>
 {#if error}

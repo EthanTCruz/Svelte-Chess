@@ -1,0 +1,15 @@
+anyio==3.6.1
+fastapi==0.79.0
+greenlet==1.1.2
+idna==3.3
+mysql==0.0.3
+mysql-connector==2.2.9
+mysql-connector-python==8.0.29
+mysqlclient==2.1.1
+protobuf==4.21.2
+pydantic==1.9.1
+PyMySQL==1.0.2
+sniffio==1.2.0
+SQLAlchemy==1.4.39
+starlette==0.19.1
+typing_extensions==4.3.0

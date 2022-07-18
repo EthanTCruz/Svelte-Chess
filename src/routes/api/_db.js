@@ -18,12 +18,6 @@ export const getUserByUsername = async (username) => {
 	return Promise.resolve(existingUser);
 };
 
-export const registerUser = (user) => {
-	const existingUser = users.find((u) => u.username === user.username);
-	if (existingUser) return Promise.reject(new Error('User already exists'));
-	users.push(user);
-	return Promise.resolve(user);
-};
 
 export const createSession = (username) => {
 	const session = {

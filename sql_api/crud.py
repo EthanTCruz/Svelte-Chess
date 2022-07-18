@@ -10,14 +10,18 @@ def get_user(db: Session, user_id: int):
 def get_user_by_username(db: Session, username: str):
     return db.query(models.User).filter(models.User.username == username).first()
 
+def validate_credentials(db: Session, username: str, password: str):
+    return db.query(models.User).filter(models.User.username == username,models.User.password == password).first()
+
 
 def get_users(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.User).offset(skip).limit(limit).all()
 
 
 def create_user(db: Session, user: schemas.UserCreate):
-    fake_hashed_password = user.password + "notreallyhashed"
-    db_user = models.User(user_id=user.user_id,username=user.username, password=fake_hashed_password)
+    hashed_password = user.password
+    #fake_hashed_password = user.password + "notreallyhashed"
+    db_user = models.User(user_id=user.user_id,username=user.username, password=hashed_password)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)

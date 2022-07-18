@@ -48,6 +48,14 @@ def create_game_for_user(
 ):
     return crud.create_user_game(db=db, game=game, user_id=user_id)
 
+@app.post("/sign-in",response_model=schemas.User)
+def validate_credentials(
+    username: str, password: str, db: Session = Depends(get_db)
+):
+    db_user = crud.validate_credentials(db, username=username,password=password)
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return db_user
 
 @app.get("/current_games/", response_model=List[schemas.Current_Game])
 def read_current_games(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
