@@ -6,12 +6,13 @@
 	let error;
 	let result = null;
 	async function handleSubmit({ detail: { username, password } }) {
-		const response = await fetch(`http://localhost:8000/sign-in?`, {
+		const response = await fetch(`http://localhost:8000/sign-in`, {
 			method: 'POST',
-			body: JSON.stringify({ 'username': username, 'password': password }),
 			headers: {
 				'accept': 'application/json',
 			},
+			body: JSON.stringify({ 'username': username, 'password': password }),
+
 		});
 		const body = await response.json();
 		result = JSON.stringify(body)
