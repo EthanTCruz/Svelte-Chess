@@ -2,6 +2,7 @@ from typing import List
 
 from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
+from fastapi.middleware.cors import CORSMiddleware
 
 from . import crud, models, schemas
 from .database import SessionLocal, engine
@@ -9,6 +10,12 @@ from .database import SessionLocal, engine
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+origins = [
+    '*'
+]
+
+
 
 
 # Dependency
@@ -48,7 +55,7 @@ def create_game_for_user(
 ):
     return crud.create_user_game(db=db, game=game, user_id=user_id)
 
-@app.post("/sign-in",response_model=schemas.User)
+@app.post("/sign-in",response_model=schemas.UserCheck)
 def validate_credentials(
     username: str, password: str, db: Session = Depends(get_db)
 ):
@@ -57,7 +64,17 @@ def validate_credentials(
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
 
+
+
 @app.get("/current_games/", response_model=List[schemas.Current_Game])
 def read_current_games(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     current_games = crud.get_current_games(db, skip=skip, limit=limit)
     return current_games
+
+app = CORSMiddleware(
+    app=app,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)

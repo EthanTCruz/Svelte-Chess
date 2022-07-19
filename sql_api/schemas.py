@@ -36,6 +36,9 @@ class UserBase(BaseModel):
     user_id: int
     username: str
 
+class UserCheck(UserBase):
+    username: str
+    password: str
 
 class UserCreate(UserBase):
     password: str
