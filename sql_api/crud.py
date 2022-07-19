@@ -11,7 +11,8 @@ def get_user_by_username(db: Session, username: str):
     return db.query(models.User).filter(models.User.username == username).first()
 
 def validate_credentials(db: Session, username: str, password: str):
-    return db.query(models.User).filter(models.User.username == username,models.User.password == password).first()
+    print(get_user_by_username(db, username))
+    return db.query(models.User).filter(models.User.username == username).first()
 
 
 def get_users(db: Session, skip: int = 0, limit: int = 100):

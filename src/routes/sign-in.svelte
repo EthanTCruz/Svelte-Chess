@@ -5,8 +5,8 @@
 
 	let error;
 	let result = null;
-	async function handleSubmit({ detail: { username, password } }) {
-		const response = await fetch(`http://localhost:8000/sign-in`, {
+	async function handleSubmit({ detail:{username, password } }) {
+		const response = await fetch(`http://localhost:8000/sign-in?username=${username}&password=${password}`, {
 			method: 'POST',
 			headers: {
 				"Content-Type": "application/json",
