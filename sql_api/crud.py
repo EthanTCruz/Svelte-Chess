@@ -4,14 +4,13 @@ from . import models, schemas
 
 
 def get_user(db: Session, user_id: int):
-    return db.query(models.User).filter(models.User.id == user_id).first()
+    return db.query(models.User).filter(models.User.user_id == user_id).first()
 
 
 def get_user_by_username(db: Session, username: str):
     return db.query(models.User).filter(models.User.username == username).first()
 
 def validate_credentials(db: Session, username: str, password: str):
-    print(get_user_by_username(db, username))
     return db.query(models.User).filter(models.User.username == username).first()
 
 
@@ -34,7 +33,7 @@ def get_current_games(db: Session, skip: int = 0, limit: int = 100):
 
 
 def create_user_game(db: Session, game: schemas.GameCreate, user_id: int):
-    db_game = models.Item(**game.dict(), owner_id=user_id)
+    db_game = models.Game(**game.dict(), owner_id=user_id)
     db.add(db_game)
     db.commit()
     db.refresh(db_game)

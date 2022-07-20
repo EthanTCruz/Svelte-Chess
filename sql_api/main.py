@@ -59,11 +59,13 @@ def create_game_for_user(
 def validate_credentials(
     username: str, password: str, db: Session = Depends(get_db)
 ):
-    print(f"username: {username}, password: {password}")
+
     db_user = crud.validate_credentials(db, username=username,password=password)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
-    return db_user
+    else:
+        db_user.ok = True
+        return db_user
 
 
 

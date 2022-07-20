@@ -37,8 +37,14 @@ class UserBase(BaseModel):
     username: str
 
 class UserCheck(UserBase):
-    username: str
+    username: str 
     password: str
+    ok: bool = False 
+    
+    class Config:
+        orm_mode=True
+
+
 
 class UserCreate(UserBase):
     password: str

@@ -6,22 +6,26 @@
 	let error;
 	let result = null;
 	async function handleSubmit({ detail:{username, password } }) {
+		
 		const response = await fetch(`http://localhost:8000/sign-in?username=${username}&password=${password}`, {
 			method: 'POST',
 			headers: {
 				"Content-Type": "application/json",
 			},
 			body: JSON.stringify({"username": username, "password": password }),
-
-
 		});
 		const body = await response.json();
-		result = JSON.stringify(body)
+		//result = JSON.stringify(body)
+
+
+
 		if (response.ok) {
+			result = "why"
 			// session from getSession hook will otherwise not be set before navigation
 			// that would trigger redirect from /protected back to /sign-in
 			$session = body;
 			await goto('/protected');
+		result = $session
 		}
 		error = body.message;
 	}
