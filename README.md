@@ -14,8 +14,10 @@ npm install
 npm run dev
 ```
 
-You can log in with this dummy user:
+Next run the sql script ```mysql_table_creation_scripts.sql``` then the script labeled ```populate_db.sql```
 
+
+You can log in with this dummy user:
 ```
 username === user
 password === test
