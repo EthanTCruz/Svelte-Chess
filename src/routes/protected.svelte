@@ -21,4 +21,7 @@
 	// $session.user;
 </script>
 <a href="/gameplay">Click here to start a game</a>
+
 <h1 class="text-2xl font-semibold text-center">Hi! You are registered with usernam {user}.</h1>
+
+<a href="/past-games">Click here for past games</a>
