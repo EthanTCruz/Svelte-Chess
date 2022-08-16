@@ -27,7 +27,10 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.refresh(db_user)
     return db_user
 
-
+def create_game(db: Session, game: schemas.GameCreate):
+    positions = ""
+    db_game = models.Current_games()
+    pass
 def get_current_games(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Current_games).offset(skip).limit(limit).all()
 

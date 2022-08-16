@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 
 class GameBase(BaseModel):
+    game_id: int
     move_no: int
     move: str
     game_status: str
@@ -11,7 +12,8 @@ class GameBase(BaseModel):
 
 
 class GameCreate(GameBase):
-    pass
+    white_player_id: int
+    black_player_id: int
 
 
 class Current_Game(GameBase):
