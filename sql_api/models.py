@@ -17,13 +17,12 @@ class User(Base):
 class Current_games(Base):
     __tablename__ = "current_games"
 
-    game_id = Column(String, primary_key=True, index=True)
-    white_player_id = Column(String,ForeignKey("user.id"))
-    black_player_id = Column(String,ForeignKey("user.id"))
+    game_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    white_player_id = Column(String,ForeignKey("user.user_id"))
+    black_player_id = Column(String,ForeignKey("user.user_id"))
     move_no = Column(Integer)
-    pieces_and_positions = Column(String)
     turn = Column(String)
-
+    pieces_and_positions = Column(String)
     #w_player = relationship("User", back_populates="current_games.white_player_id")
     #b_player = relationship("User", back_populates="current_games.black_player_id")
 
@@ -42,3 +41,4 @@ class Past_games(Base):
 
     #w_player = relationship("User", back_populates="past_games.white_player_id")
     #b_player = relationship("User", back_populates="past_games.black_player_id")
+

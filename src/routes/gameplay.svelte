@@ -1,4 +1,7 @@
 <script context="module">
+import { session } from '$app/stores';
+
+
 	export async function load({ session }) {
 		if (!session?.username) {
 			return {
@@ -8,24 +11,109 @@
 		}
 		return {
 			props: {
+				user_id: session.user_id,
 				user: session.username,
+				game_id: session.game_id,
+				pieces_and_positions: session.pieces_and_positions,
+				player_color: session.player_color,
+
 			},
 		};
 	}
+
+
+	
 </script>
 <script>
+
 	export let user;
+	export let user_id;
+	export let game_id;
+	export let pieces_and_positions;
+	export let player_color
 
 
-	import { board } from './store.js'	
 
+
+
+	//"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+
+
+	import { board} from './store.js'	
+function adjustBoard(){
+	let fen_components = pieces_and_positions.split(" ")
+	let fen_board = fen_components[0].split("/")
+	console.log(fen_board)
+	for (let i = 0; i < 8; i++){
+		for (let j = 0; j < fen_board[i].length; j++){
+			let team = ''
+			let piece = fen_board[i].charAt(j)
+			const blacks = ['q','k','b','n','r','p']
+			const whites = ['Q','K','B','N','R','P']
+			if (whites.includes(piece)){
+				team = 'W'
+				board[i].positions[j] = `${piece}${team}`
+			} else if(blacks.includes(piece)){
+				team = 'B'
+				board[i].positions[j] = `${piece.toUpperCase()}${team}`
+			} else {
+				let value = Number(fen_board[i].charAt(j))
+				for (let m = j; m<j+value;m++){
+					board[i].positions[m] = "  "
+					
+				}
+			}
+
+			console.log(team)
+		
+	}
+	}
+	let fen_en_passant = fen_components[3]
+	if (fen_en_passant == '-'){
+		en_passant = [0,0]
+	} else {
+		let column = fen_en_passant.charAt(0)
+		let row = Number(fen_en_passant.charAt(1)) - 1
+
+		column = columns.indexOf(column) - 1
+		en_passant = [row,column]
+	}
+
+
+	let fen_castle = fen_components[2].split("")
+	if (!(fen_castle.includes('k'))){
+		w_rook_has_moved[1] = true
+	}
+	if (!(fen_castle.includes('q'))){
+		w_rook_has_moved[0] = true
+	}
+	if (!(fen_castle.includes('K'))){
+		b_rook_has_moved[1] = true
+	}
+	if (!(fen_castle.includes('Q'))){
+		b_rook_has_moved[0] = true
+	}
+	turn = fen_components[1].toUpperCase()
+}
+
+
+
+
+
+
+	
+	console.log(pieces_and_positions)
 	let turn = 'W';
-	let move_no;
+	let move_no = 0;
 	let positions_selected = 0;
 	let move_from;
 	let move_to;
 	let last_move = [0,0];
+	//let columns = ['h','g','f','e','d','c','b','a']
+	let columns = ['a','b','c','d','e','f','g','h']
 	let en_passant = [0,0];
+	
+
 
 	let b_castle = true
 	let w_castle = true
@@ -33,6 +121,28 @@
 	let b_king_has_moved = false
 	let w_rook_has_moved = [false,false]
 	let b_rook_has_moved = [false,false]
+
+	let fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+	adjustBoard()
+	async function moveRequest(move) {
+		const response = await fetch(`http://localhost:8000/current_games/board/${user_id}/${game_id}/${move}`);
+		const body = await response.json();
+		console.log(`api move ${body.pieces_and_positions}`)
+		fen = body.pieces_and_positions
+		adjustBoard()
+		return body
+	}
+
+	
+	function sendMove(){
+		let from = `${columns[move_from[0]]}${Math.abs(7-move_from[1]+1)}`
+		let to = `${columns[move_to[0]]}${Math.abs(7-move_to[1]+1)}`
+		let move = `${from}${to}`
+		console.log(`move is : ${move}`)
+		console.log(moveRequest(move=move))
+	}
+
+
 	function checkMove(){
 		let piece = board[move_from[1]].positions[move_from[0]]
 		
@@ -66,7 +176,7 @@
 					}
 				}
 			}
-
+			console.log(`pawncheck: ${pawnCheck}`)
 			return pawnCheck
 		} else if (piece == 'N'){
 			return checkKnight(piece,team)
@@ -99,11 +209,11 @@
 		let right_check
 		let left_check 
 		if (team == 'W'){
-			direction = 1
+			direction = -1
 			opponent = 'B'
 			cond1 = move_from[1]+2*direction == move_to[1] && move_from[1] == 1
 		} else {
-			direction = -1
+			direction = 1
 			opponent = 'W'
 			cond1 = move_from[1]+2*direction == move_to[1] && move_from[1] == 6
 
@@ -125,7 +235,10 @@
 		left_check = left_check && board[move_to[1]].positions[move_to[0]].charAt(1) == opponent
 		
 		cond2 = move_from[1]+1*direction == move_to[1] && move_from[0] == move_to[0] 
-
+		console.log("cond2")
+		console.log(move_from,move_to)
+		console.log(direction)	
+		console.log(move_from[1]+(1*direction),move_to[1], move_from[0],move_to[0])
 		if (right_check){
 			cond3 = move_from[1]+1*direction == move_to[1] && move_from[0]+1 == move_to[0]
 
@@ -138,6 +251,7 @@
 		} else {
 			cond4 = false
 		}
+		console.log([cond1,cond2,cond3,cond4,cond5])
 
 		return (cond1 || cond2 || cond3 || cond4 || cond5)
 
@@ -752,6 +866,8 @@ function in_check_location(team,location){
 
 	}
 
+
+
 function turnComplete(){
 	board = board
 			if (turn == 'W'){
@@ -763,9 +879,10 @@ function turnComplete(){
 			last_move[1] = move_to[1]
 			
 			
-			if (turn == 'W'){
+			if (turn == 'B'){
 				move_no++
 			}
+			sendMove()
 }
 
 	function movePiece(row,column){
@@ -799,8 +916,9 @@ function turnComplete(){
 					
 				}
 			}
-
+			console.log(`checkmove: ${checkMove()}`)
 			if (checkMove()){
+			let temp = board[move_to[1]].positions[move_to[0]]
 			//console.log(`piece: ${board[move_to[1]].positions[move_to[1]]}, row: ${move_to[1]}, column: ${move_to[0]}`)
 			//console.log(`piece: ${board[move_from[1]].positions[move_from[1]]}, row: ${move_from[1]}, column: ${move_from[0]}`)
 
@@ -831,6 +949,7 @@ function turnComplete(){
 			board = board
 
 			if (!(in_check(turn))){
+
 				board[move_from[1]].positions[move_from[0]] = board[move_to[1]].positions[move_to[0]]
 				board[move_to[1]].positions[move_to[0]] = temp
 				board = board
@@ -838,19 +957,8 @@ function turnComplete(){
 				return false
 
 			}
+			turnComplete()
 			board = board
-			if (turn == 'W'){
-				turn = 'B'
-			} else {
-				turn = 'W'
-			}
-			last_move[0] = move_to[0]
-			last_move[1] = move_to[1]
-			
-			
-			if (turn == false){
-				move_no++
-			}
 			return true
 		} else if(castle_checks){
 			console.log(1)
@@ -952,6 +1060,12 @@ console.log(column)
 //$: console.log(`move_from: ${move_from}`)
 //$: console.log(`move_to: ${move_to}`)
 //$: console.log(`en passant: ${en_passant}, move to: ${move_to}`)
+
+
+
+
+
+
 </script>
 
 
@@ -981,4 +1095,5 @@ console.log(column)
 	}	
 
 </style>
-<h1>gameplay {user}</h1>
+<h2>turn {turn}</h2>
+<h1>gameplay{pieces_and_positions} color: {player_color}</h1>

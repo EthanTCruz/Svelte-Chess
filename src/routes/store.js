@@ -1,7 +1,6 @@
 import {writable} from 'svelte/store'
 
-																
-
+															
 export const board = [
 {row: 1, positions: ['RW','NW','BW','QW','KW','BW','NW','RW']},
 {row: 2, positions: ['PB','  ','PW','  ','  ','PW','  ','PW']},

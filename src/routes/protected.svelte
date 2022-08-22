@@ -1,4 +1,7 @@
 <script context="module">
+import { session } from "$app/stores";
+
+
 	export async function load({ session }) {
 		if (!session?.username) {
 			return {
@@ -8,29 +11,95 @@
 		}
 		return {
 			props: {
-				user: session.username,
+				user_id: session.user_id,
+				username: session.username,
+				game_id: -1,
+				pieces_and_positions: "wait",
+				player_color: " ",
 			},
 		};
 	}
+	
+	let game_status = 'None';
+
+
 </script>
 
 <script>
-	export let user;
+	import { goto } from '$app/navigation';
+	export let username
+	export let user_id
+	export let game_id
 	export let game_status = "None";
+	export let pieces_and_positions
+	export let player_color
+
+
+	let result = null;
+	async function createGame() {
+		console.log(session.user_id)
+		const response = await fetch('http://localhost:8000/create/current_games/', {
+			method: 'POST',
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({"game_id": 0, "white_player_id": user_id,"black_player_id": user_id }),
+		});
+		const body = await response.json();
+		//result = JSON.stringify(body)
+		if (response.ok) {
+			result = "why"
+			// session from getSession hook will otherwise not be set before navigation
+			// that would trigger redirect from /protected back to /sign-in
+		}
+		game_status = body.message;
+	}
+
 	function handleClick() {
 		alert('no more alerts')
 	}
+
+	
+	async function joinGame() {
+		console.log(session.user_id)
+		const response = await fetch('http://localhost:8000/join/current_games/', {
+			method: 'POST',
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({"user_id": user_id,"username": username}),
+		});
+		const body = await response.json();
+		$session.game_id = body.game_id
+		$session.pieces_and_positions = body.pieces_and_positions
+		$session.player_color = body.player_color
+		await goto('/gameplay');
+		//result = JSON.stringify(body)
+		if (response.ok) {
+			result = "why"
+			// session from getSession hook will otherwise not be set before navigation
+			// that would trigger redirect from /protected back to /sign-in
+		}
+		game_status = body.game_id;
+
+	}
+
+
 	// import { session } from '$app/stores';
 	// $session.user;
 </script>
 <a href="/gameplay">Click here to start a game</a>
 
-<h1 class="text-2xl font-semibold text-center">Hi! You are registered with usernam {user}.</h1>
+<h1 class="text-2xl font-semibold text-center">Hi! You are registered with usernam {username}: {user_id}.</h1>
 
 <a href="/past-games">Click here for past games</a>
 
 
-<p>{game_status}</p>
-<button on:click|once={handleClick}>
-	Click me
+<p>game status: {game_status} {game_id} {pieces_and_positions}</p>
+<button on:click|once={createGame}>
+	Create game
+</button>
+<p></p>
+<button on:click|once={joinGame} href="/gameplay">
+join game
 </button>

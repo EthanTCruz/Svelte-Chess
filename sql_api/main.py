@@ -49,11 +49,30 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
     return db_user
 
 
-@app.post("/users/{user_id}/current_games/", response_model=schemas.Current_Game)
+@app.post("/create/current_games/", response_model=schemas.GameBase)
 def create_game_for_user(
-    user_id: int, game: schemas.GameCreate, db: Session = Depends(get_db)
+    game: schemas.GameBase, db: Session = Depends(get_db)
 ):
-    return crud.create_user_game(db=db, game=game, user_id=user_id)
+    return crud.create_user_game(db=db, game_data=game)
+
+@app.post("/join/current_games/", response_model=schemas.GameJoin)
+def create_game_for_user(
+    user: schemas.UserBase, db: Session = Depends(get_db)
+):
+    game = crud.join_a_game(db=db, user=user)
+    print(f"game object{game.game_id}")
+    waiting_for_other_player = False
+    if game.white_player_id == game.black_player_id:
+        waiting_for_other_player=True
+    color = "W"
+    if int(game.black_player_id) == int(user.user_id):
+        color = "B"
+    print(color)
+    game_data = schemas.GameJoin(game_id=game.game_id,white_player_id=game.white_player_id,
+    black_player_id=game.black_player_id, waiting_for_other_player=waiting_for_other_player,
+    pieces_and_positions=game.pieces_and_positions, player_color=color)
+    return game_data
+
 
 @app.post("/sign-in",response_model=schemas.UserCheck)
 def validate_credentials(
@@ -73,6 +92,21 @@ def validate_credentials(
 def read_current_games(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     current_games = crud.get_current_games(db, skip=skip, limit=limit)
     return current_games
+
+@app.get("/current_games/board/{user_id}/{game_id}", response_model=schemas.GameBoard)
+def get_current_game_board(user_id: int, game_id: int, db: Session = Depends(get_db)):
+    game = schemas.GetGameBoard(user_id=user_id,game_id=game_id)
+    print(game)
+    game_board = crud.get_game_board(db=db, game=game)
+    return game_board
+
+@app.get("/current_games/board/{user_id}/{game_id}/{move}", response_model=schemas.GameBoard)
+def move_piece(user_id: int, game_id: int,move: str, db: Session = Depends(get_db)):
+    game = schemas.GetGameBoard(user_id=user_id,game_id=game_id)
+    print(game)
+    game_board = crud.move(db=db, game=game,move=move)
+    return game_board
+
 
 app = CORSMiddleware(
     app=app,
