@@ -1,4 +1,5 @@
 
+from pyexpat import model
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 import chess
@@ -88,6 +89,7 @@ def get_game_board(game: schemas.GetGameBoard, db: Session):
 
 def move(db: Session, game: schemas.GetGameBoard, move: str):
     game = get_game_board(db=db,game=game)
+    db_game = models.Past_games()
     fen = game.pieces_and_positions
     board = chess.Board(fen)
     print(board.push_san(move))
@@ -101,12 +103,32 @@ def move(db: Session, game: schemas.GetGameBoard, move: str):
     else:
         setattr(game,'turn','B')
     if board.is_checkmate():
-        setattr(game,'game_status',game.turn)
-    if board.is_stalemate():
-        setattr(game,'game_status','D')
+        setattr(db_game,'game_status',game.turn)
+    elif board.is_stalemate():
+        setattr(db_game,'game_status','D')
+    else: 
+        setattr(db_game,'game_status','C')
     if board.turn and game.turn == 'B':
-        setattr(game,'move_no',game.move_no+1)
+        setattr(game,'move_no',fen.split(" ")[-1])
     db.add(game)
     db.commit()
     db.refresh(game)
+
+   
+    db_game.game_id = game.game_id
+    db_game.white_player_id = game.white_player_id
+    db_game.black_player_id = game.black_player_id
+    db_game.pieces_and_positions = game.pieces_and_positions
+    db_game.move_no = fen.split(" ")[-1]
+    db_game.move = move
+
+    db.add(db_game)
+    db.commit()
+    db.refresh(db_game)
+    
     return game
+
+
+def getPastGamesPGNs(user_id,db: Session,skip,limit):
+    return db.query(models.Past_games).filter(or_(models.Past_games.white_player_id == user_id,
+    models.Past_games.black_player_id == user_id)).offset(skip).limit(limit).all()

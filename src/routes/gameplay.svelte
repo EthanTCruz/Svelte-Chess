@@ -39,35 +39,44 @@ import { session } from '$app/stores';
 	//"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 
-	import { board} from './store.js'	
-function adjustBoard(){
+	import { board} from './store.js'
+
+async function adjustBoard(){
 	let fen_components = pieces_and_positions.split(" ")
+
 	let fen_board = fen_components[0].split("/")
-	console.log(fen_board)
+
 	for (let i = 0; i < 8; i++){
+		let board_column = 0
 		for (let j = 0; j < fen_board[i].length; j++){
+			
 			let team = ''
 			let piece = fen_board[i].charAt(j)
 			const blacks = ['q','k','b','n','r','p']
 			const whites = ['Q','K','B','N','R','P']
 			if (whites.includes(piece)){
 				team = 'W'
-				board[i].positions[j] = `${piece}${team}`
+				board[7-i].positions[board_column] = `${piece}${team}`
+				board_column++
 			} else if(blacks.includes(piece)){
 				team = 'B'
-				board[i].positions[j] = `${piece.toUpperCase()}${team}`
+				board[7-i].positions[board_column] = `${piece.toUpperCase()}${team}`
+			board_column++
 			} else {
 				let value = Number(fen_board[i].charAt(j))
-				for (let m = j; m<j+value;m++){
-					board[i].positions[m] = "  "
-					
-				}
+					for( let m = Number(board_column);m<Number(board_column+value);m++){
+						console.log(`m: ${m}, board: ${board_column}`)
+						board[7-i].positions[m] = "  "
+					}
+					board_column += value
 			}
 
-			console.log(team)
+
 		
 	}
+
 	}
+
 	let fen_en_passant = fen_components[3]
 	if (fen_en_passant == '-'){
 		en_passant = [0,0]
@@ -94,6 +103,7 @@ function adjustBoard(){
 		b_rook_has_moved[0] = true
 	}
 	turn = fen_components[1].toUpperCase()
+	return 1
 }
 
 
@@ -133,10 +143,10 @@ function adjustBoard(){
 		return body
 	}
 
-	
+
 	function sendMove(){
-		let from = `${columns[move_from[0]]}${Math.abs(7-move_from[1]+1)}`
-		let to = `${columns[move_to[0]]}${Math.abs(7-move_to[1]+1)}`
+		let from = `${columns[move_from[0]]}${Math.abs(move_from[1]+1)}`
+		let to = `${columns[move_to[0]]}${Math.abs(move_to[1]+1)}`
 		let move = `${from}${to}`
 		console.log(`move is : ${move}`)
 		console.log(moveRequest(move=move))
@@ -209,11 +219,11 @@ function adjustBoard(){
 		let right_check
 		let left_check 
 		if (team == 'W'){
-			direction = -1
+			direction = 1
 			opponent = 'B'
 			cond1 = move_from[1]+2*direction == move_to[1] && move_from[1] == 1
 		} else {
-			direction = 1
+			direction = -1
 			opponent = 'W'
 			cond1 = move_from[1]+2*direction == move_to[1] && move_from[1] == 6
 
@@ -1097,3 +1107,4 @@ console.log(column)
 </style>
 <h2>turn {turn}</h2>
 <h1>gameplay{pieces_and_positions} color: {player_color}</h1>
+<h1> user: {user}</h1>

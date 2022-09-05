@@ -16,7 +16,7 @@
 		});
 	}
 </script>
-Current credentials: username:'user', password:'test'
+
 <form on:submit|preventDefault={submit} class="space-y-5 {$$props.class}">
 	<Input label="Username" id="username" name="username" type="text" bind:value={username} required />
 	<Input label="Password" id="password" name="password" type="password" bind:value={password} required />

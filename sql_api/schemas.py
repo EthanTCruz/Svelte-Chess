@@ -17,6 +17,12 @@ class GameJoin(GameBase):
     class Config:
         orm_mode = True
 
+class PastGamePGN(BaseModel):
+    game_id: int
+    move: str
+    class Config:
+        orm_mode = True
+
 class GetGameBoard(BaseModel):
     user_id: int
     game_id: int

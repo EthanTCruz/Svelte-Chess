@@ -9,7 +9,7 @@
 		},
 		{
 			href: '/protected',
-			name: `${$session.user ? '🔓' : '🔒'} Protected`,
+			name: `${$session.username ? '🔓' : '🔒'} Protected`,
 		},
 	];
 
@@ -24,7 +24,7 @@
 	<nav class="container mx-auto">
 		<div class="w-full py-4 flex items-center justify-between">
 			<div class="ml-10 space-x-4">
-				{#if $session.user}
+				{#if $session.username}
 					<button
 						on:click={handleSignOut}
 						class="inline-block bg-indigo-500 py-2 px-4 border border-transparent rounded-md text-base font-medium text-white hover:bg-opacity-75"

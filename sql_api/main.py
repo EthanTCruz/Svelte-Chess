@@ -38,8 +38,16 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 @app.get("/users/", response_model=List[schemas.User])
 def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     users = crud.get_users(db, skip=skip, limit=limit)
+    print("==========")
+    print(users)
     return users
 
+@app.get("/past_games/{user_id}", response_model=List[schemas.PastGamePGN])
+def get_past_games_pgns(user_id: int, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    games = crud.getPastGamesPGNs(user_id=user_id,db=db, skip=skip, limit=limit)
+    print(games)
+
+    return games
 
 @app.get("/users/{user_id}", response_model=schemas.User)
 def read_user(user_id: int, db: Session = Depends(get_db)):
@@ -103,8 +111,9 @@ def get_current_game_board(user_id: int, game_id: int, db: Session = Depends(get
 @app.get("/current_games/board/{user_id}/{game_id}/{move}", response_model=schemas.GameBoard)
 def move_piece(user_id: int, game_id: int,move: str, db: Session = Depends(get_db)):
     game = schemas.GetGameBoard(user_id=user_id,game_id=game_id)
-    print(game)
+    
     game_board = crud.move(db=db, game=game,move=move)
+
     return game_board
 
 

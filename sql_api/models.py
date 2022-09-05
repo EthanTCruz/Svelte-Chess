@@ -29,15 +29,16 @@ class Current_games(Base):
 
 class Past_games(Base):
     __tablename__ = "past_games"
-
-    game_id = Column(String, primary_key=True, index=True)
-    white_player_id = Column(String,ForeignKey("user.id"))
-    black_player_id = Column(String,ForeignKey("user.id"))
+    
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    game_id = Column(String,ForeignKey("current_games.game_id"))
+    white_player_id = Column(String,ForeignKey("user.user_id"))
+    black_player_id = Column(String,ForeignKey("user.user_id"))
     move_no = Column(Integer)
     move = Column(String)
     game_status = Column(String)
     pieces_and_positions = Column(String)
-    turn = Column(String)
+ 
 
     #w_player = relationship("User", back_populates="past_games.white_player_id")
     #b_player = relationship("User", back_populates="past_games.black_player_id")
