@@ -42,16 +42,16 @@ def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     print(users)
     return users
 
-@app.get("/past_games/{user_id}", response_model=List[schemas.PastGamePGN])
-def get_past_games_pgns(user_id: int, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    games = crud.getPastGamesPGNs(user_id=user_id,db=db, skip=skip, limit=limit)
+@app.get("/past_games/{id}", response_model=List[schemas.PastGamePGN])
+def get_past_games_pgns(id: int, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    games = crud.getPastGamesPGNs(id=id,db=db, skip=skip, limit=limit)
     print(games)
 
     return games
 
-@app.get("/users/{user_id}", response_model=schemas.User)
-def read_user(user_id: int, db: Session = Depends(get_db)):
-    db_user = crud.get_user(db, user_id=user_id)
+@app.get("/users/{id}", response_model=schemas.User)
+def read_user(id: int, db: Session = Depends(get_db)):
+    db_user = crud.get_user(db, id=id)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
@@ -73,7 +73,7 @@ def create_game_for_user(
     if game.white_player_id == game.black_player_id:
         waiting_for_other_player=True
     color = "W"
-    if int(game.black_player_id) == int(user.user_id):
+    if int(game.black_player_id) == int(user.id):
         color = "B"
     print(color)
     game_data = schemas.GameJoin(game_id=game.game_id,white_player_id=game.white_player_id,
@@ -101,16 +101,16 @@ def read_current_games(skip: int = 0, limit: int = 100, db: Session = Depends(ge
     current_games = crud.get_current_games(db, skip=skip, limit=limit)
     return current_games
 
-@app.get("/current_games/board/{user_id}/{game_id}", response_model=schemas.GameBoard)
-def get_current_game_board(user_id: int, game_id: int, db: Session = Depends(get_db)):
-    game = schemas.GetGameBoard(user_id=user_id,game_id=game_id)
+@app.get("/current_games/board/{id}/{game_id}", response_model=schemas.GameBoard)
+def get_current_game_board(id: int, game_id: int, db: Session = Depends(get_db)):
+    game = schemas.GetGameBoard(id=id,game_id=game_id)
     print(game)
     game_board = crud.get_game_board(db=db, game=game)
     return game_board
 
-@app.get("/current_games/board/{user_id}/{game_id}/{move}", response_model=schemas.GameBoard)
-def move_piece(user_id: int, game_id: int,move: str, db: Session = Depends(get_db)):
-    game = schemas.GetGameBoard(user_id=user_id,game_id=game_id)
+@app.get("/current_games/board/{id}/{game_id}/{move}", response_model=schemas.GameBoard)
+def move_piece(id: int, game_id: int,move: str, db: Session = Depends(get_db)):
+    game = schemas.GetGameBoard(id=id,game_id=game_id)
     
     game_board = crud.move(db=db, game=game,move=move)
 

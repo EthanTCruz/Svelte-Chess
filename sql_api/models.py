@@ -7,7 +7,7 @@ from .database import Base
 class User(Base):
     __tablename__ = "user"
 
-    user_id = Column(String, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True)
     password = Column(String)
 
@@ -18,8 +18,8 @@ class Current_games(Base):
     __tablename__ = "current_games"
 
     game_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    white_player_id = Column(String,ForeignKey("user.user_id"))
-    black_player_id = Column(String,ForeignKey("user.user_id"))
+    white_player_id = Column(Integer,ForeignKey("user.id"))
+    black_player_id = Column(Integer,ForeignKey("user.id"))
     move_no = Column(Integer)
     turn = Column(String)
     pieces_and_positions = Column(String)
@@ -31,9 +31,9 @@ class Past_games(Base):
     __tablename__ = "past_games"
     
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    game_id = Column(String,ForeignKey("current_games.game_id"))
-    white_player_id = Column(String,ForeignKey("user.user_id"))
-    black_player_id = Column(String,ForeignKey("user.user_id"))
+    game_id = Column(Integer,ForeignKey("current_games.game_id"))
+    white_player_id = Column(Integer,ForeignKey("user.id"))
+    black_player_id = Column(Integer,ForeignKey("user.id"))
     move_no = Column(Integer)
     move = Column(String)
     game_status = Column(String)

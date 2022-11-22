@@ -7,4 +7,4 @@ node_modules
 /.svelte-kit
 /package
 /sql_api/env
-/__pycache__
+/sql_api/__pycache__

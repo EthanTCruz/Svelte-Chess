@@ -24,7 +24,7 @@ class PastGamePGN(BaseModel):
         orm_mode = True
 
 class GetGameBoard(BaseModel):
-    user_id: int
+    id: int
     game_id: int
     class Config:
         orm_mode = True
@@ -61,7 +61,7 @@ class Past_Game(GameBase):
         orm_mode = True
 
 class UserBase(BaseModel):
-    user_id: int
+    id: int
     username: str
     class Config:
         orm_mode = True
@@ -81,7 +81,7 @@ class UserCreate(UserBase):
 
 
 class User(UserBase):
-    user_id: int
+    id: int
     username: str
     password: str
     #past_games: List[Past_Game] = []

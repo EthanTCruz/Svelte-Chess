@@ -7,8 +7,8 @@ import random
 from . import models, schemas
 
 
-def get_user(db: Session, user_id: int):
-    return db.query(models.User).filter(models.User.user_id == user_id).first()
+def get_user(db: Session, id: int):
+    return db.query(models.User).filter(models.User.id == id).first()
 
 
 def get_user_by_username(db: Session, username: str):
@@ -25,7 +25,7 @@ def get_users(db: Session, skip: int = 0, limit: int = 100):
 def create_user(db: Session, user: schemas.UserCreate):
     hashed_password = user.password
     #fake_hashed_password = user.password + "notreallyhashed"
-    db_user = models.User(user_id=user.user_id,username=user.username, password=hashed_password)
+    db_user = models.User(id=user.id,username=user.username, password=hashed_password)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
@@ -57,7 +57,7 @@ def join_a_game(db: Session, user: schemas.UserBase):
         return game_id
     game_id = find_empty_games(db=db)
     if game_id is None:
-        game = schemas.GameBase(black_player_id=user.user_id,white_player_id=user.user_id)
+        game = schemas.GameBase(black_player_id=user.id,white_player_id=user.id)
         create_user_game(db=db,game_data=game)
         game_id = find_empty_games(db=db)
     else:
@@ -69,23 +69,23 @@ def find_empty_games(db: Session):
     return db.query(models.Current_games).filter(models.Current_games.white_player_id == models.Current_games.black_player_id).first()
 
 def find_player_games(db: Session,user: schemas.UserBase):
-    return db.query(models.Current_games).filter(or_(models.Current_games.white_player_id == user.user_id, 
-    models.Current_games.black_player_id == user.user_id)).first()
+    return db.query(models.Current_games).filter(or_(models.Current_games.white_player_id == user.id, 
+    models.Current_games.black_player_id == user.id)).first()
 
 def player_join_game(db: Session,game: schemas.GameBase, user: schemas.UserBase):
     team = random.randint(0, 1)
     if team == 0:
-        setattr(game, 'white_player_id', user.user_id)
+        setattr(game, 'white_player_id', user.id)
     else:
-        setattr(game, 'black_player_id', user.user_id)
+        setattr(game, 'black_player_id', user.id)
     db.add(game)
     db.commit()
     db.refresh(game)
     return game
 
 def get_game_board(game: schemas.GetGameBoard, db: Session):
-    return db.query(models.Current_games).filter(or_(models.Current_games.white_player_id == game.user_id, 
-    models.Current_games.black_player_id == game.user_id),(models.Current_games.game_id == game.game_id)).first()
+    return db.query(models.Current_games).filter(or_(models.Current_games.white_player_id == game.id, 
+    models.Current_games.black_player_id == game.id),(models.Current_games.game_id == game.game_id)).first()
 
 def move(db: Session, game: schemas.GetGameBoard, move: str):
     game = get_game_board(db=db,game=game)
@@ -129,6 +129,6 @@ def move(db: Session, game: schemas.GetGameBoard, move: str):
     return game
 
 
-def getPastGamesPGNs(user_id,db: Session,skip,limit):
-    return db.query(models.Past_games).filter(or_(models.Past_games.white_player_id == user_id,
-    models.Past_games.black_player_id == user_id)).offset(skip).limit(limit).all()
+def getPastGamesPGNs(id,db: Session,skip,limit):
+    return db.query(models.Past_games).filter(or_(models.Past_games.white_player_id == id,
+    models.Past_games.black_player_id == id)).offset(skip).limit(limit).all()

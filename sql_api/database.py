@@ -2,14 +2,11 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-#Uncomment this connector to use a mariadb database
-#connector = "mariadb+mariadbconnector"
-
-#Uncomment this one to use a mysql database
-connector = "mysql+pymysql"
+SQLALCHEMY_DATABASE_URL = "sqlite:///./svelte-chess-db.db"
+# SQLALCHEMY_DATABASE_URL = "postgresql://user:password@postgresserver/db"
 
 engine = create_engine(
-    f"{connector}://root:root@localhost/svelte-chess-db",connect_args= dict(host='localhost', port=3306)
+    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

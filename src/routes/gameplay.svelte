@@ -21,7 +21,13 @@ import { session } from '$app/stores';
 		};
 	}
 
+	import { io } from 'socket.io-client'
 
+const socket = io()
+
+socket.on('eventFromServer', (message) => {
+  console.log(message)
+})
 	
 </script>
 <script>
@@ -39,9 +45,19 @@ import { session } from '$app/stores';
 	//"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 
-	import { board} from './store.js'
+	let board = [
+{row: 1, positions: ['RW','NW','BW','QW','KW','BW','NW','RW']},
+{row: 2, positions: ['PB','  ','PW','  ','  ','PW','  ','PW']},
+{row: 3, positions: ['  ','  ','  ','  ','  ','  ','  ','  ']},
+{row: 4, positions: ['  ','  ','  ','  ','  ','  ','  ','  ']},
+{row: 5, positions: ['  ','  ','  ','  ','  ','  ','  ','  ']},
+{row: 6, positions: ['  ','  ','  ','  ','  ','  ','  ','  ']},
+{row: 7, positions: ['PB','  ','PB','  ','  ','PB','  ','PB']},
+{row: 8, positions: ['RB','NB','BB','QB','KB','BB','NB','RB']},
+];
 
-async function adjustBoard(){
+ function adjustBoard(){
+
 	let fen_components = pieces_and_positions.split(" ")
 
 	let fen_board = fen_components[0].split("/")
@@ -65,7 +81,6 @@ async function adjustBoard(){
 			} else {
 				let value = Number(fen_board[i].charAt(j))
 					for( let m = Number(board_column);m<Number(board_column+value);m++){
-						console.log(`m: ${m}, board: ${board_column}`)
 						board[7-i].positions[m] = "  "
 					}
 					board_column += value
@@ -106,13 +121,77 @@ async function adjustBoard(){
 	return 1
 }
 
+async function adjustBoardWithFEN(FEN){
+
+let fen_components = FEN.split(" ")
+
+let fen_board = fen_components[0].split("/")
+
+for (let i = 0; i < 8; i++){
+	let board_column = 0
+	for (let j = 0; j < fen_board[i].length; j++){
+		
+		let team = ''
+		let piece = fen_board[i].charAt(j)
+		const blacks = ['q','k','b','n','r','p']
+		const whites = ['Q','K','B','N','R','P']
+		if (whites.includes(piece)){
+			team = 'W'
+			board[7-i].positions[board_column] = `${piece}${team}`
+			board_column++
+		} else if(blacks.includes(piece)){
+			team = 'B'
+			board[7-i].positions[board_column] = `${piece.toUpperCase()}${team}`
+		board_column++
+		} else {
+			let value = Number(fen_board[i].charAt(j))
+				for( let m = Number(board_column);m<Number(board_column+value);m++){
+					board[7-i].positions[m] = "  "
+				}
+				board_column += value
+		}
+
+
+	
+}
+
+}
+
+let fen_en_passant = fen_components[3]
+if (fen_en_passant == '-'){
+	en_passant = [0,0]
+} else {
+	let column = fen_en_passant.charAt(0)
+	let row = Number(fen_en_passant.charAt(1)) - 1
+
+	column = columns.indexOf(column) - 1
+	en_passant = [row,column]
+}
+
+
+let fen_castle = fen_components[2].split("")
+if (!(fen_castle.includes('k'))){
+	w_rook_has_moved[1] = true
+}
+if (!(fen_castle.includes('q'))){
+	w_rook_has_moved[0] = true
+}
+if (!(fen_castle.includes('K'))){
+	b_rook_has_moved[1] = true
+}
+if (!(fen_castle.includes('Q'))){
+	b_rook_has_moved[0] = true
+}
+turn = fen_components[1].toUpperCase()
+return 1
+}
 
 
 
 
 
 	
-	console.log(pieces_and_positions)
+
 	let turn = 'W';
 	let move_no = 0;
 	let positions_selected = 0;
@@ -133,15 +212,48 @@ async function adjustBoard(){
 	let b_rook_has_moved = [false,false]
 
 	let fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-	adjustBoard()
-	async function moveRequest(move) {
-		const response = await fetch(`http://localhost:8000/current_games/board/${user_id}/${game_id}/${move}`);
-		const body = await response.json();
+	import { afterUpdate, beforeUpdate,onMount } from 'svelte';
+
+
+
+	onMount(async () => {
+		setBoard()
+	});
+
+	async function setBoard(){
+		const fetchPromise = fetch(`http://localhost:8000/current_games/board/${user_id}/${game_id}`);
+		fetchPromise.then(response => {
+		const body = response.json();
 		console.log(`api move ${body.pieces_and_positions}`)
 		fen = body.pieces_and_positions
 		adjustBoard()
+		board=board
 		return body
+});	
 	}
+
+
+
+	 function moveRequest(move) {
+		let fetchPromise = fetch(`http://localhost:8000/current_games/board/${user_id}/${game_id}/${move}`).then(response => {
+		
+		const body = response.json();
+		console.log(`api move ${body.pieces_and_positions}`)
+		fen = body.pieces_and_positions
+		return body
+});	
+console.log(fetchPromise)
+fen = fetchPromise.then(response => {
+	console.log(`response: ${response}`)
+	let result = response
+	return result
+})
+console.log(`FEN: ${fen}`)
+console.log(2)
+adjustBoardWithFEN(FEN=fen)
+console.log(3)
+	}
+	
 
 
 	function sendMove(){
@@ -149,7 +261,7 @@ async function adjustBoard(){
 		let to = `${columns[move_to[0]]}${Math.abs(move_to[1]+1)}`
 		let move = `${from}${to}`
 		console.log(`move is : ${move}`)
-		console.log(moveRequest(move=move))
+		moveRequest(move=move)
 	}
 
 
@@ -186,7 +298,7 @@ async function adjustBoard(){
 					}
 				}
 			}
-			console.log(`pawncheck: ${pawnCheck}`)
+
 			return pawnCheck
 		} else if (piece == 'N'){
 			return checkKnight(piece,team)
@@ -201,8 +313,7 @@ async function adjustBoard(){
 			
 			return checkKing(team)
 		}
-		console.log(`b check: ${in_check('B')}`)
-		console.log(`w check: ${in_check('W')}`)
+
 
 		return true || in_check(team)
 	}
@@ -245,10 +356,6 @@ async function adjustBoard(){
 		left_check = left_check && board[move_to[1]].positions[move_to[0]].charAt(1) == opponent
 		
 		cond2 = move_from[1]+1*direction == move_to[1] && move_from[0] == move_to[0] 
-		console.log("cond2")
-		console.log(move_from,move_to)
-		console.log(direction)	
-		console.log(move_from[1]+(1*direction),move_to[1], move_from[0],move_to[0])
 		if (right_check){
 			cond3 = move_from[1]+1*direction == move_to[1] && move_from[0]+1 == move_to[0]
 
@@ -261,7 +368,7 @@ async function adjustBoard(){
 		} else {
 			cond4 = false
 		}
-		console.log([cond1,cond2,cond3,cond4,cond5])
+
 
 		return (cond1 || cond2 || cond3 || cond4 || cond5)
 
@@ -386,13 +493,9 @@ async function adjustBoard(){
 	}
 function in_check_location(team,location){
 	let checks = InCheckByDiagonally(team,location)
-		console.log(`check1: ${checks}`)
 		checks = checks || InCheckByLaterally(team,location)
-		console.log(`check2: ${checks}`)
 		checks = checks || InCheckByKing(team,location)
-		console.log(`check3: ${checks}`)
 		checks = checks || InCheckByKnight(team,location)
-		console.log(`check4: ${checks}`)
 
 
 
@@ -423,15 +526,11 @@ function in_check_location(team,location){
 		} else {
 			opponent = 'W'
 		}
-		console.log(`${team} in check`)
+
 		let checks = InCheckByDiagonally(team,king_location)
-		//console.log(`check1: ${checks}`)
 		checks = checks || InCheckByLaterally(team,king_location)
-		//console.log(`check2: ${checks}`)
 		checks = checks || InCheckByKing(team,king_location)
-		//console.log(`check3: ${checks}`)
 		checks = checks || InCheckByKnight(team,king_location)
-		//console.log(`check4: ${checks}`)
 
 
 
@@ -456,7 +555,6 @@ function in_check_location(team,location){
 		let y = king_location[1]
 		//add pawn check in here
 		let opponent
-		//console.log(`position: ${x},${y} piece: ${getPiece(x-1,y+1)}`)
 
 		if (team == 'W') {
 			opponent = 'B'
@@ -653,7 +751,6 @@ function in_check_location(team,location){
 		let next_space_piece = next_space.charAt(0)
 		if (next_space_team == opponent){
 			if (next_space_piece == 'Q' || next_space_piece == 'B'){
-				console.log(`check from ${next}`)
 				return true
 			}
 			return false
@@ -879,7 +976,7 @@ function in_check_location(team,location){
 
 
 function turnComplete(){
-	board = board
+
 			if (turn == 'W'){
 				turn = 'B'
 			} else {
@@ -893,6 +990,7 @@ function turnComplete(){
 				move_no++
 			}
 			sendMove()
+board=board
 }
 
 	function movePiece(row,column){
@@ -911,7 +1009,6 @@ function turnComplete(){
 				castle_checks = !w_king_has_moved
 				
 				if (castle_checks){
-					console.log(`c move to ${move_to}`)
 					castle_checks = move_to[1] == 0 && (move_to[0]==2 || move_to[0]==6)
 
 					
@@ -920,18 +1017,14 @@ function turnComplete(){
 				castle_checks = !b_king_has_moved
 				
 				if (castle_checks){
-					console.log(`c move to ${move_to}`)
 					castle_checks = move_to[1] == 7 && (move_to[0]==2 || move_to[0]==6)
 
 					
 				}
 			}
-			console.log(`checkmove: ${checkMove()}`)
 			if (checkMove()){
 			let temp = board[move_to[1]].positions[move_to[0]]
-			//console.log(`piece: ${board[move_to[1]].positions[move_to[1]]}, row: ${move_to[1]}, column: ${move_to[0]}`)
-			//console.log(`piece: ${board[move_from[1]].positions[move_from[1]]}, row: ${move_from[1]}, column: ${move_from[0]}`)
-
+	
 			if (move_to[0] == en_passant[0] && move_to[1] == en_passant[1]){
 
 				let direction
@@ -956,48 +1049,36 @@ function turnComplete(){
 			board[move_from[1]].positions[move_from[0]] = "  ";
 			
 		}
-			board = board
+
 
 			if (!(in_check(turn))){
 
 				board[move_from[1]].positions[move_from[0]] = board[move_to[1]].positions[move_to[0]]
 				board[move_to[1]].positions[move_to[0]] = temp
-				board = board
+
 				console.log("king is in check")
 				return false
 
 			}
 			turnComplete()
-			board = board
+
 			return true
 		} else if(castle_checks){
-			console.log(1)
-			if (move_to[0] == 2){
-				console.log(2)
-				let empty_check
-				console.log("empty_check")
-				empty_check = getPiece(move_from[1],move_from[0]-1) == '  '
-				console.log(empty_check)
-				empty_check = empty_check && getPiece(move_from[1],move_from[0]-2) == '  '
-				console.log(empty_check)
-				empty_check = empty_check && getPiece(move_from[1],move_from[0]-3) == '  '
-				console.log(empty_check)
-				console.log("end empty check")
 
+			if (move_to[0] == 2){
+
+				let empty_check
+
+				empty_check = getPiece(move_from[1],move_from[0]-1) == '  '
+				empty_check = empty_check && getPiece(move_from[1],move_from[0]-2) == '  '
+				empty_check = empty_check && getPiece(move_from[1],move_from[0]-3) == '  '
+				
 				if (empty_check){
-					console.log(3)
 				let check_spaces
-				console.log("checking spaces")
-				console.log(move_from)
 				check_spaces = in_check_location(turn, [move_from[0]-1,move_from[1]])
-				console.log(check_spaces)
 				check_spaces = check_spaces && in_check_location(turn, [move_from[0]-2,move_from[1]])
-				console.log(check_spaces)
 				check_spaces = check_spaces && in_check_location(turn, [move_from[0]-3,move_from[1]])
-				console.log(check_spaces)
-				console.log("end checking spaces")
 				if (check_spaces){
-					console.log(4)
 			let temp = board[move_from[1]].positions[move_from[0]]
 			board[move_from[1]].positions[move_from[0]-2] = `K${turn}`
 			board[move_from[1]].positions[move_from[0]-1] = `R${turn}`;
@@ -1013,23 +1094,15 @@ function turnComplete(){
 			} else if (move_to[0] == 6){
 				let empty_check
 
-	console.log("empty checks")
 	empty_check = getPiece(move_from[1],move_from[0]+1) == '  '
-	console.log(empty_check)
 	empty_check = empty_check && getPiece(move_from[1],move_from[0]+2) == '  '
-	console.log(empty_check)
-	console.log("end empty check")
 
 
 if (empty_check){
-	console.log(5)
 let check_spaces
 check_spaces = in_check_location(turn, [move_from[0]+1,move_from[1]])
-console.log(check_spaces)
 check_spaces = check_spaces && in_check_location(turn, [move_from[0]+2,move_from[1]])
-console.log(check_spaces)
 if (check_spaces){
-	console.log(6)
 let temp = board[move_from[1]].positions[move_from[0]]
 board[move_from[1]].positions[move_from[0]+2] = `K${turn}`
 board[move_from[1]].positions[move_from[0]+1] = `R${turn}`;
@@ -1059,17 +1132,6 @@ turnComplete()
 		}
 	}
 
-	//$: console.log(board)
-
-	function selectCell(row,column){
-
-console.log(row)
-console.log(column)
-
-	}
-//$: console.log(`move_from: ${move_from}`)
-//$: console.log(`move_to: ${move_to}`)
-//$: console.log(`en passant: ${en_passant}, move to: ${move_to}`)
 
 
 
@@ -1078,10 +1140,11 @@ console.log(column)
 
 </script>
 
-
+{#key board}
 {#each board as row}
 <div class="row">
 	{#each row.positions as position, i}
+	<!-- svelte-ignore a11y-click-events-have-key-events -->
 	<div class = "cell" on:click="{() => movePiece(i+1,row.row)}">
 	{position}
 
@@ -1089,6 +1152,7 @@ console.log(column)
 	{/each}
 	</div>
 {/each}
+{/key}
 
 <style>
 	.row {
