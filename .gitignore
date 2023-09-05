@@ -8,3 +8,5 @@ node_modules
 /package
 /sql_api/env
 /sql_api/__pycache__
+/sql_api/env/
+

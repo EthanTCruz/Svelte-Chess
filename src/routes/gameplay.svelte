@@ -20,7 +20,7 @@ import { session } from '$app/stores';
 			},
 		};
 	}
-
+/*
 	import { io } from 'socket.io-client'
 
 const socket = io()
@@ -28,7 +28,7 @@ const socket = io()
 socket.on('eventFromServer', (message) => {
   console.log(message)
 })
-	
+*/
 </script>
 <script>
 
@@ -43,16 +43,16 @@ socket.on('eventFromServer', (message) => {
 
 
 	//"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-
+	
 
 	let board = [
 {row: 1, positions: ['RW','NW','BW','QW','KW','BW','NW','RW']},
-{row: 2, positions: ['PB','  ','PW','  ','  ','PW','  ','PW']},
+{row: 2, positions: ['PW','PW','PW','PW','PW','PW','PW','PW']},
 {row: 3, positions: ['  ','  ','  ','  ','  ','  ','  ','  ']},
 {row: 4, positions: ['  ','  ','  ','  ','  ','  ','  ','  ']},
 {row: 5, positions: ['  ','  ','  ','  ','  ','  ','  ','  ']},
 {row: 6, positions: ['  ','  ','  ','  ','  ','  ','  ','  ']},
-{row: 7, positions: ['PB','  ','PB','  ','  ','PB','  ','PB']},
+{row: 7, positions: ['PB','PB','PB','PB','PB','PB','PB','PB']},
 {row: 8, positions: ['RB','NB','BB','QB','KB','BB','NB','RB']},
 ];
 
